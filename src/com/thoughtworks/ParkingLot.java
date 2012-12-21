@@ -7,7 +7,6 @@ public class ParkingLot {
 
   private int capacity;
   private int size;
-  private List<Listener> listeners = new ArrayList<Listener>();
 
   public ParkingLot(int size) {
     this.size = size;
@@ -25,7 +24,6 @@ public class ParkingLot {
   public void park() {
     if (capacity <= 0) throw new ParkingLotFullException("No more cars");
     capacity--;
-    notifyListeners(true);
   }
 
   public boolean isFull() {
@@ -35,21 +33,6 @@ public class ParkingLot {
   public void remove() {
     if (capacity == size) throw new ParkingLotEmptyException("Parking lot is empty");
     capacity++;
-    notifyListeners(false);
-  }
-
-  public void notifyListeners(boolean parked) {
-    for (Listener listener : listeners) {
-      listener.carParkingNotification(this, parked);
-    }
-  }
-
-  public void register(Listener listener) {
-    listeners.add(listener);
-  }
-
-  public double capacityRatio() {
-    return (double) capacity / (double) size;
   }
 
 }
