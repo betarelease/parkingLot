@@ -10,8 +10,6 @@ import com.thoughtworks.ParkingLotFullException;
 
 public class ParkingLotTest {
 
-  private static final double LIMIT_80_PERCENT = 0.2;
-
   private ParkingLot parkingLotWithCars(int capacity, int noOfCars) {
     ParkingLot parkingLot = new ParkingLot(capacity);
     for (int i = 0; i < noOfCars; i++) {
@@ -59,27 +57,4 @@ public class ParkingLotTest {
     fullParkingLot.remove();
   }
 
-  @Test
-  public void attendantShouldNotBeAbleToParkIfLotIs80Percent() {
-    Attendant attendant = createBadAttendantWithParkingLimit80Percent();
-    assertAttendantCannotPark(attendant);
-  }
-
-  private Attendant createBadAttendantWithParkingLimit80Percent() {
-    Attendant badAttendant = new Attendant(LIMIT_80_PERCENT);
-    ParkingLot fullParkingLot = parkingLotWithCars(5, 5);
-    badAttendant.manage(fullParkingLot);
-    fullParkingLot.remove();
-    fullParkingLot.remove();
-    fullParkingLot.park();
-    return badAttendant;
-  }
-
-  private void assertAttendantCannotPark(Attendant badAttendant) {
-    try {
-      badAttendant.park();
-      fail("12 year old Attendant should not be able to park");
-    } catch (ParkingLotFullException e) {
-    }
-  }
 }
