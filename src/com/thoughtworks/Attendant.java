@@ -1,12 +1,11 @@
 package com.thoughtworks;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Attendant implements Listener {
 
   private static final double NO_LIMIT = 0.0;
-  private Set<ParkingLot> availableParkingLots = new HashSet<ParkingLot>();
+  private List<ParkingLot> availableParkingLots = new ArrayList<ParkingLot>();
   private double limit;
 
   public Attendant(){
@@ -19,6 +18,7 @@ public class Attendant implements Listener {
   public void manage(ParkingLot parkingLot) {
     parkingLot.register(this);
     availableParkingLots.add(parkingLot);
+    Collections.sort(availableParkingLots);
   }
 
   public void park() {

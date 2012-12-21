@@ -3,7 +3,7 @@ package com.thoughtworks;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParkingLot {
+public class ParkingLot implements Comparable<ParkingLot>{
 
   private int capacity;
   private int size;
@@ -52,4 +52,8 @@ public class ParkingLot {
     return (double) capacity / (double) size;
   }
 
+  @Override
+  public int compareTo(ParkingLot other) {
+     return Double.compare(this.capacityRatio(), other.capacityRatio());
+  }
 }
