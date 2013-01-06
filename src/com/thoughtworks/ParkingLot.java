@@ -1,13 +1,9 @@
 package com.thoughtworks;
 
-import java.util.ArrayList;
-import java.util.List;
+public class ParkingLot extends ParkingSystem {
 
-public class ParkingLot implements Comparable<ParkingLot>{
-
-  private int capacity;
-  private int size;
-  private List<Listener> listeners = new ArrayList<Listener>();
+  int capacity;
+  int size;
 
   public ParkingLot(int size) {
     this.size = size;
@@ -22,25 +18,17 @@ public class ParkingLot implements Comparable<ParkingLot>{
     return size;
   }
 
-  public void park() {
-    if (capacity <= 0) throw new ParkingLotFullException("No more cars");
-    capacity--;
-    notifyListeners(true);
+  public boolean canPark() {
+    return capacity > 0;
   }
 
-  public boolean isFull() {
-    return capacity == 0;
+  public boolean isEmpty() {
+    return capacity == size;
   }
 
-  public void remove() {
-    if (capacity == size) throw new ParkingLotEmptyException("Parking lot is empty");
-    capacity++;
-    notifyListeners(false);
-  }
-
-  public void notifyListeners(boolean parked) {
+  public void notifyListeners() {
     for (Listener listener : listeners) {
-      listener.carParkingNotification(this, parked);
+      listener.carParkedNotification(this);
     }
   }
 
@@ -49,11 +37,17 @@ public class ParkingLot implements Comparable<ParkingLot>{
   }
 
   public double capacityRatio() {
-    return (double) capacity / (double) size;
+    return capacity / size;
   }
 
   @Override
-  public int compareTo(ParkingLot other) {
-     return Double.compare(this.capacityRatio(), other.capacityRatio());
+  public void basicPark() {
+    capacity--;
   }
+
+  @Override
+  public void basicRemove() {
+    capacity++;
+  }
+
 }

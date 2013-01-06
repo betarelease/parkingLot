@@ -1,41 +1,94 @@
 package com.thoughtworks;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class Attendant implements Listener {
+public class Attendant extends ParkingSystem implements Listener {
 
   private static final double NO_LIMIT = 0.0;
-  private List<ParkingLot> availableParkingLots = new ArrayList<ParkingLot>();
+  private Set<ParkingSystem> parkingSystems = new HashSet<ParkingSystem>();
+
   private double limit;
 
-  public Attendant(){
+  Attendant() {
     this(NO_LIMIT);
   }
-  
-  public Attendant(double limit){
+
+  Attendant(double limit) {
     this.limit = limit;
   }
-  public void manage(ParkingLot parkingLot) {
-    parkingLot.register(this);
-    availableParkingLots.add(parkingLot);
-    Collections.sort(availableParkingLots);
+
+  public void manage(ParkingSystem parkingSystem) {
+    parkingSystem.register(this);
+    parkingSystems.add(parkingSystem);
   }
 
-  public void park() {
-    if (availableParkingLots.isEmpty()) throw new ParkingLotFullException("Attendant cannot park. All lots must be full."); 
-    for(ParkingLot parkingLot : availableParkingLots){
-      parkingLot.park();
-      return;
+  public boolean canPark() {
+    List<ParkingSystem> sortedParkingSystems = new ArrayList<ParkingSystem>(parkingSystems);
+    Collections.sort(sortedParkingSystems, new LeastFullComparator());
+    parkingSystems = new HashSet<ParkingSystem>(sortedParkingSystems);
+    return !parkingSystems.isEmpty();
+  }
+
+  public void basicPark() {
+    for (ParkingSystem parkingSystem : parkingSystems) {
+      parkingSystem.park();
+      break;
     }
   }
 
-  public void carParkingNotification(ParkingLot parkingLot, boolean parked) {
-    if (parked && parkingLot.capacityRatio() <= limit) {
-      availableParkingLots.remove(parkingLot);
+  public void carParkedNotification(ParkingSystem parkingLot) {
+    if (parkingLot.capacityRatio() <= limit) {
+      parkingSystems.remove(parkingLot);
     }
-    if (!parked && parkingLot.capacityRatio() > limit) {
-      availableParkingLots.add(parkingLot);
+    if (parkingLot.capacityRatio() > limit) {
+      parkingSystems.add(parkingLot);
     }
   }
 
+  public int capacity() {
+    int sum = 0;
+    for (ParkingSystem parkingSystem : parkingSystems) {
+      sum += parkingSystem.capacity();
+    }
+    return sum;
+  }
+
+  public double capacityRatio() {
+    if(parkingSystems.isEmpty()) return 0;
+    return capacity() / parkingSystems.size();
+  }
+
+  @Override
+  public void basicRemove() {
+    for (ParkingSystem parkingSystem : parkingSystems) {
+      parkingSystem.remove();
+      break;
+    }
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return capacity() == 0;
+  }
+
+  @Override
+  public int size() {
+    int sum = 0;
+    for (ParkingSystem parkingSystem : parkingSystems) {
+      sum += parkingSystem.size();
+    }
+    return sum;
+
+  }
+}
+
+class LeastFullComparator implements Comparator<ParkingSystem> {
+  public int compare(ParkingSystem parkingSystem, ParkingSystem other) {
+    return (int) (parkingSystem.capacityRatio() - other.capacityRatio());
+  }
 }

@@ -4,14 +4,16 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.thoughtworks.ParkingLot;
-import com.thoughtworks.ParkingLotEmptyException;
-import com.thoughtworks.ParkingLotFullException;
-
 public class ParkingLotTest {
 
-  private ParkingLot parkingLotWithCars(int capacity, int noOfCars) {
-    ParkingLot parkingLot = new ParkingLot(capacity);
+  @Test
+  public void parkingLotFull() {
+    ParkingSystem parkingLot = parkingLotWithCars(5, 5);
+    assertFalse(parkingLot.canPark());
+  }
+
+  private ParkingSystem parkingLotWithCars(int capacity, int noOfCars) {
+    ParkingSystem parkingLot = new ParkingLot(capacity);
     for (int i = 0; i < noOfCars; i++) {
       parkingLot.park();
     }
@@ -19,42 +21,29 @@ public class ParkingLotTest {
   }
 
   @Test
-  public void parkingLotFull() {
-    ParkingLot parkingLot = parkingLotWithCars(5, 5);
-    assertTrue(parkingLot.isFull());
-  }
-
-  @Test(expected = ParkingLotFullException.class)
   public void cannotPark() {
-    ParkingLot parkingLot = parkingLotWithCars(5, 5);
-    parkingLot.park();
-  }
+    ParkingSystem parkingLot = parkingLotWithCars(5, 5);
 
-  @Test(expected = ParkingLotFullException.class)
-  public void attendantCannotParkIfLotsFull() {
-    Attendant attendant = createAttendantWithFullParkingLots();
-    attendant.park();
-  }
-
-  private Attendant createAttendantWithFullParkingLots() {
-    Attendant attendant = new Attendant();
-    ParkingLot fullParkingLot1 = parkingLotWithCars(5, 5);
-    ParkingLot fullParkingLot2 = parkingLotWithCars(10, 10);
-    attendant.manage(fullParkingLot1);
-    attendant.manage(fullParkingLot2);
-    return attendant;
+    try {
+      parkingLot.park();
+      fail("Should throw a RuntimeException when parking lot is full");
+    } catch (ParkingLotFullException e) {
+    }
   }
 
   @Test
   public void canRemove() {
-    ParkingLot fullParkingLot = parkingLotWithCars(5, 5);
+    ParkingSystem fullParkingLot = parkingLotWithCars(5, 5);
     fullParkingLot.remove();
   }
 
-  @Test(expected = ParkingLotEmptyException.class)
+  @Test
   public void cannotRemoveFromEmptyLot() {
-    ParkingLot fullParkingLot = parkingLotWithCars(5, 0);
-    fullParkingLot.remove();
+    ParkingSystem fullParkingLot = parkingLotWithCars(5, 0);
+    try {
+      fullParkingLot.remove();
+      fail("Should not be able to remove this car");
+    } catch (RuntimeException e) {
+    }
   }
-
 }
