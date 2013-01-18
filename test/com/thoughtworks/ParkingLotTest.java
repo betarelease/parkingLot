@@ -2,48 +2,39 @@ package com.thoughtworks;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class ParkingLotTest {
+  private ParkingLot parkingLot;
 
-  @Test
-  public void parkingLotFull() {
-    ParkingSystem parkingLot = parkingLotWithCars(5, 5);
-    assertFalse(parkingLot.canPark());
-  }
-
-  private ParkingSystem parkingLotWithCars(int capacity, int noOfCars) {
-    ParkingSystem parkingLot = new ParkingLot(capacity);
-    for (int i = 0; i < noOfCars; i++) {
-      parkingLot.park();
-    }
-    return parkingLot;
+  @Before
+  public void createAParkingLotWithCapacity3() {
+    parkingLot = new ParkingLot(3);
   }
 
   @Test
-  public void cannotPark() {
-    ParkingSystem parkingLot = parkingLotWithCars(5, 5);
-
-    try {
-      parkingLot.park();
-      fail("Should throw a RuntimeException when parking lot is full");
-    } catch (ParkingLotFullException e) {
-    }
+  public void shouldRevealHowFullLotIs() {
+    assertEquals(0, parkingLot.howFull(), 0.01);
+    parkingLot.park();
+    assertEquals(0.33, parkingLot.howFull(), 0.01);
+    parkingLot.park();
+    assertEquals(0.67, parkingLot.howFull(), 0.01);
   }
 
-  @Test
-  public void canRemove() {
-    ParkingSystem fullParkingLot = parkingLotWithCars(5, 5);
-    fullParkingLot.remove();
+  @Test(expected = ParkingFullException.class)
+  public void shouldAllowParkingWhenASpaceIsOpen() {
+    parkingLot.park();
+    parkingLot.park();
+    parkingLot.park();
+    parkingLot.park();
   }
 
-  @Test
-  public void cannotRemoveFromEmptyLot() {
-    ParkingSystem fullParkingLot = parkingLotWithCars(5, 0);
-    try {
-      fullParkingLot.remove();
-      fail("Should not be able to remove this car");
-    } catch (RuntimeException e) {
-    }
+  @Test(expected = ParkingEmptyException.class)
+  public void shouldAllowUnparkingWhenThereIsACarInTheLot() {
+    parkingLot.park();
+    parkingLot.unpark();
+    parkingLot.unpark();
   }
+
 }

@@ -1,88 +1,56 @@
 package com.thoughtworks;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.*;
 
-public class AttendantTest {
+public abstract class AttendantTest {
 
-  private static final double LIMIT_80_PERCENT = 0.2;
+	protected ParkingLot parkingLot;
 
-  @Test
-  public void attendantCannotParkIfLotsFull() {
-    Attendant attendant = new Attendant();
-    ParkingSystem fullParkingLot1 = parkingLotWithCars(5, 5);
-    ParkingSystem fullParkingLot2 = parkingLotWithCars(10, 10);
-    attendant.manage(fullParkingLot1);
-    attendant.manage(fullParkingLot2);
-    try {
-      attendant.park();
-      fail("Should not be able to park this car");
-    } catch (ParkingLotFullException e) {
-    }
-  }
+	@Before
+	public void createAttendants() {
+		parkingLot = mock(ParkingLot.class);
+	}
 
-  private ParkingSystem parkingLotWithCars(int capacity, int noOfCars) {
-    ParkingSystem parkingLot = new ParkingLot(capacity);
-    for (int i = 0; i < noOfCars; i++) {
-      parkingLot.park();
-    }
-    return parkingLot;
-  }
+	@Test
+	public void shouldReturnHowFull() {
+		ValetService parkingLotTwo = mock(ParkingLot.class);
+		ValetService parkingLotThree = mock(ParkingLot.class);
 
-  @Test
-  public void attendantShouldNotBeAbleToParkIfLotIs80Percent() {
-    ParkingSystem attendant = createBadAttendantWithParkingLimit80Percent();
-    assertAttendantCannotPark(attendant);
-  }
+		Attendant ted = createAttendant(parkingLotTwo, parkingLotThree);
+		Attendant bill = createAttendant(parkingLot, ted);
+		
+		when(parkingLot.howFull()).thenReturn(0.8);
+		when(parkingLotTwo.howFull()).thenReturn(0.7);
+		when(parkingLotThree.howFull()).thenReturn(0.5);
 
-  private ParkingSystem createBadAttendantWithParkingLimit80Percent() {
-    Attendant badAttendant = new Attendant(LIMIT_80_PERCENT);
-    ParkingSystem fullParkingLot = parkingLotWithCars(5, 5);
-    badAttendant.manage(fullParkingLot);
-    fullParkingLot.remove();
-    fullParkingLot.remove();
-    fullParkingLot.park();
-    return badAttendant;
-  }
+		assertEquals(0.7, bill.howFull(), 0.01);
+		assertEquals(0.6, ted.howFull(), 0.01);	
+	}
+	
+	@Test
+	public void shouldParkInFullestValetService() {
+		ValetService parkingLotTwo = mock(ParkingLot.class);
+		ValetService parkingLotThree = mock(ParkingLot.class);
 
-  private void assertAttendantCannotPark(ParkingSystem badAttendant) {
-    try {
-      badAttendant.park();
-      fail("12 year old Attendant should not be able to park");
-    } catch (ParkingLotFullException e) {
-    }
-  }
+		Attendant ted = createAttendant(parkingLotTwo, parkingLotThree);
+		Attendant bill = createAttendant(parkingLot, ted);
+		
+		when(parkingLot.howFull()).thenReturn(0.75);
+		when(parkingLotTwo.howFull()).thenReturn(0.7);
+		when(parkingLotThree.howFull()).thenReturn(0.5);
 
-  @Test
-  public void attendantShouldBeAbleToParkInLeastFullLot() {
-    Attendant attendant = new Attendant();
-    ParkingSystem parkingLot1 = parkingLotWithCars(5, 3);
-    ParkingSystem parkingLot2 = parkingLotWithCars(10, 7);
-    attendant.manage(parkingLot1);
-    attendant.manage(parkingLot2);
-    attendant.park();
-    attendant.park();
+		try {
+			bill.park();
+			verify(parkingLot).park();
+		}
+		catch(IllegalStateException e) {
+		}
+	}
+	
+	protected abstract double tooFull();
 
-    assertAttendantCannotPark(attendant);
-  }
-
-  @Test
-  public void attendantManagesOtherAttendants() {
-    Attendant subAttendant = new Attendant();
-    ParkingSystem parkingLot1 = parkingLotWithCars(10, 7);
-    subAttendant.manage(parkingLot1);
-
-    Attendant attendant = new Attendant();
-    ParkingSystem parkingLot2 = parkingLotWithCars(5, 3);
-    attendant.manage(parkingLot2);
-
-    attendant.manage(subAttendant);
-
-    attendant.park();
-    attendant.park();
-
-    assertAttendantCannotPark(attendant);
-  }
-
+	protected abstract Attendant createAttendant(ValetService... lots);
 }

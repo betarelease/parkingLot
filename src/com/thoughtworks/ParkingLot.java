@@ -1,53 +1,52 @@
 package com.thoughtworks;
 
-public class ParkingLot extends ParkingSystem {
+import java.util.ArrayList;
+import java.util.List;
 
-  int capacity;
-  int size;
+public class ParkingLot extends ValetService {
+  private final int capacity;
+  private int cars;
+  // private Cop dirtyCop;
+  private List<ParkingLotObserver> observers = new ArrayList<ParkingLotObserver>();
 
-  public ParkingLot(int size) {
-    this.size = size;
-    this.capacity = size;
+  public ParkingLot(int capacity) {
+    this.capacity = capacity;
+    cars = 0;
   }
 
-  public int capacity() {
-    return capacity;
+  public void park() {
+    if (cars < capacity) {
+      cars++;
+      notifyObservers();
+    } else parkingFailed();
   }
 
-  public int size() {
-    return size;
-  }
-
-  public boolean canPark() {
-    return capacity > 0;
-  }
-
-  public boolean isEmpty() {
-    return capacity == size;
-  }
-
-  public void notifyListeners() {
-    for (Listener listener : listeners) {
-      listener.carParkedNotification(this);
+  private void notifyObservers() {
+    for (ParkingLotObserver observer : observers) {
+      observer.listen(this, cars, capacity);
     }
   }
 
-  public void register(Listener listener) {
-    listeners.add(listener);
+  public void unpark() {
+    if (cars <= 0) throw new ParkingEmptyException("No cars!");
+    cars--;
+    notifyObservers();
   }
 
-  public double capacityRatio() {
-    return capacity / size;
+  public double howFull() {
+    return ((double) cars / (double) capacity);
   }
 
-  @Override
-  public void basicPark() {
-    capacity--;
+  public void register(ParkingLotObserver observer) {
+    observers.add(observer);
   }
 
-  @Override
-  public void basicRemove() {
-    capacity++;
+  public int cars() {
+    return cars;
   }
 
+  public void accept(ParkingVisitor v) {
+    v.preVisit(this);
+    v.postVisit(this);
+  }
 }

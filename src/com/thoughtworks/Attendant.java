@@ -1,94 +1,59 @@
 package com.thoughtworks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class Attendant extends ParkingSystem implements Listener {
+public abstract class Attendant extends ValetService {
 
-  private static final double NO_LIMIT = 0.0;
-  private Set<ParkingSystem> parkingSystems = new HashSet<ParkingSystem>();
+	protected List<ValetService> valetServices = new ArrayList<ValetService>();
 
-  private double limit;
+	public Attendant(ValetService... valetServices) {
+		this.valetServices = Arrays.asList(valetServices);
+	}
 
-  Attendant() {
-    this(NO_LIMIT);
-  }
+	protected abstract double tooFull();
 
-  Attendant(double limit) {
-    this.limit = limit;
-  }
+	public void park() {
+		Collections.sort(valetServices, new CarNumbersComparator());
+		ValetService lot = canPark(valetServices);
+		if (lot != null) { lot.park(); }
+		else parkingFailed();
+	}
 
-  public void manage(ParkingSystem parkingSystem) {
-    parkingSystem.register(this);
-    parkingSystems.add(parkingSystem);
-  }
+	private ValetService canPark(List<ValetService> lots) {
+		for (ValetService lot : lots) {
+			if (lot.howFull() < tooFull()) {
+				return lot;
+			}
+		}
+		return null;
+	}
 
-  public boolean canPark() {
-    List<ParkingSystem> sortedParkingSystems = new ArrayList<ParkingSystem>(parkingSystems);
-    Collections.sort(sortedParkingSystems, new LeastFullComparator());
-    parkingSystems = new HashSet<ParkingSystem>(sortedParkingSystems);
-    return !parkingSystems.isEmpty();
-  }
+	public double howFull() {
+		double sum = 0.0;
+		for (ValetService valetService : valetServices) {
+			sum += valetService.howFull();
+		}
+		return (sum / valetServices.size());
+	}
 
-  public void basicPark() {
-    for (ParkingSystem parkingSystem : parkingSystems) {
-      parkingSystem.park();
-      break;
+  public int cars() {
+    int total = 0;
+    for (ValetService valetService : valetServices) {
+      total += valetService.cars();
     }
+    return total;
   }
-
-  public void carParkedNotification(ParkingSystem parkingLot) {
-    if (parkingLot.capacityRatio() <= limit) {
-      parkingSystems.remove(parkingLot);
+  
+  
+  public  void accept(ParkingVisitor report) {
+    report.preVisit(this);
+    for(ValetService valetService : valetServices){
+        valetService.accept(report);
     }
-    if (parkingLot.capacityRatio() > limit) {
-      parkingSystems.add(parkingLot);
-    }
-  }
-
-  public int capacity() {
-    int sum = 0;
-    for (ParkingSystem parkingSystem : parkingSystems) {
-      sum += parkingSystem.capacity();
-    }
-    return sum;
-  }
-
-  public double capacityRatio() {
-    if(parkingSystems.isEmpty()) return 0;
-    return capacity() / parkingSystems.size();
-  }
-
-  @Override
-  public void basicRemove() {
-    for (ParkingSystem parkingSystem : parkingSystems) {
-      parkingSystem.remove();
-      break;
-    }
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return capacity() == 0;
-  }
-
-  @Override
-  public int size() {
-    int sum = 0;
-    for (ParkingSystem parkingSystem : parkingSystems) {
-      sum += parkingSystem.size();
-    }
-    return sum;
-
-  }
+    report.postVisit(this);
 }
 
-class LeastFullComparator implements Comparator<ParkingSystem> {
-  public int compare(ParkingSystem parkingSystem, ParkingSystem other) {
-    return (int) (parkingSystem.capacityRatio() - other.capacityRatio());
-  }
 }

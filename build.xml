@@ -1,0 +1,82 @@
+<project name="parkinglot" default="verified-build" basedir=".">
+	<property name="project" value="parkinglot" />
+	<property name="java.src" location = "src" />
+	<property name="java.classes" location="bin" />
+	<property name="test.src" location="test" />
+	<property name="test.classes" location="test" />
+	<property name="dist" location="working_dir/dist" />
+	<property name="jar" location="${dist}/${project}.jar" />
+	
+	<path id="build.libs">
+    	<fileset dir="lib">
+        	<include name="*.jar"/>
+    	</fileset>
+	</path>
+	
+	<path id="production.libs">
+    	<fileset dir="lib">
+        	<include name="*.jar"/>
+    	</fileset>
+	</path>
+
+
+	<target name="verified-build" depends="clean, class-jar, successful-tests" />
+	
+	<target name="clean">
+		<delete dir="working_dir" />
+		<mkdir dir="working_dir" />
+		<mkdir dir="${java.classes}" />
+		<mkdir dir="${test.classes}" />
+		<mkdir dir="${dist}" />
+	</target>
+	
+    <target name="successful-tests" depends="class-jar, test-classes">
+        <junit failureproperty="tests.failed">
+          <classpath>
+            <pathelement location="${jar}" />
+            <pathelement location="${test.classes}" />
+          </classpath>
+          <classpath refid="build.libs"/>
+
+          <batchtest fork="yes">
+            <fileset dir="${test.src}">
+              <include name="**/*Test.java"/>
+              <exclude name="**/AttendantTest.java"/>
+              <exclude name="**/ParkingLotTest.java"/>
+            </fileset>
+          </batchtest>
+        </junit>
+        <fail if="tests.failed"/>
+    </target>
+
+	<target name="java-classes">
+		<javac srcdir="${java.src}" destdir="${java.classes}" />
+	</target>
+
+    <target name="class-jar" depends="java-classes">
+	  <delete file="${jar}" />
+	  <jar destfile="${jar}">
+	    <fileset dir="${java.classes}" />
+	  	<fileset dir="lib" />
+	  </jar>
+    </target>
+	
+	<target name="test-classes" depends="class-jar">
+		<javac srcdir="${test.src}" destdir="${test.classes}">
+			<classpath>
+				<pathelement location="${jar}" />
+			</classpath>
+			<classpath refid="build.libs" />
+		</javac>
+	</target>
+
+	<target name="zip">
+		<delete file="./${project}.zip" />
+		<zip destfile="./${project}.zip">
+    		<fileset dir=".">
+    			<exclude name="bin/" />
+    			<exclude name="working_dir/" />
+    		</fileset>
+		</zip>
+    </target>
+</project>
