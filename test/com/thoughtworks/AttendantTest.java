@@ -1,5 +1,6 @@
 package com.thoughtworks;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -22,8 +23,8 @@ public class AttendantTest {
     }
   }
 
-  private ParkingSystem parkingLotWithCars(int capacity, int noOfCars) {
-    ParkingSystem parkingLot = new ParkingLot(capacity);
+  private ParkingSystem parkingLotWithCars(int size, int noOfCars) {
+    ParkingSystem parkingLot = new ParkingLot(size);
     for (int i = 0; i < noOfCars; i++) {
       parkingLot.park();
     }
@@ -64,7 +65,8 @@ public class AttendantTest {
     attendant.park();
     attendant.park();
 
-    assertAttendantCannotPark(attendant);
+    assertEquals(1, parkingLot1.capacity());
+    assertEquals(2, parkingLot2.capacity());
   }
 
   @Test

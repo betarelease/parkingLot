@@ -60,7 +60,8 @@ public class Attendant extends ParkingSystem implements Listener {
 
   public double capacityRatio() {
     if(parkingSystems.isEmpty()) return 0;
-    return capacity() / parkingSystems.size();
+      System.out.println("parking systems size is : " + parkingSystems.size());
+    return capacity() / size();
   }
 
   @Override
