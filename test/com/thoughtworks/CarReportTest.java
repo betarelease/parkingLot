@@ -24,10 +24,10 @@ public class CarReportTest {
     manager.accept(r);
     
     String expectedReport = "Attendant with 4 cars\n" + 
-                                         "   Attendant with 3 cars\n" + 
-                                         "      Lot with 2 cars\n" + 
-                                         "      Lot with 1 cars\n" + 
-                                         "   Lot with 1 cars\n";
+                            "   Attendant with 3 cars\n" +
+                            "      Lot with 2 cars\n" +
+                            "      Lot with 1 cars\n" +
+                            "   Lot with 1 cars\n";
     assertEquals(expectedReport,  r.report());
   }
 
